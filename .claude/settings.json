@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m venv .venv)",
+      "Bash(.venv/bin/python -m pip install --upgrade pip)",
+      "Bash(.venv/bin/python -m pip install opencv-python)"
+    ]
+  }
+}
