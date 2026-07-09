@@ -1,0 +1,11 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: #02030a; /* match particle background to avoid flash on load */
+}
+
+#starfield {
+  position: fixed;
+  inset: 0;
+}
