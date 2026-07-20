@@ -2,10 +2,18 @@ html,
 body {
   height: 100%;
   margin: 0;
-  background: #02030a; /* match particle background to avoid flash on load */
+  background: #02030a; 
 }
 
 #starfield {
   position: fixed;
   inset: 0;
+  z-index: 1;
+}
+
+#canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
 }
