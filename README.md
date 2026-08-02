@@ -1,4 +1,4 @@
-<img width="998" height="534" alt="Aug-02-2026 13-14-59" src="https://github.com/user-attachments/assets/52b51b21-8354-427b-87c9-fad5217587ce" />
+<img width="998" height="534" alt="Aug-02-2026 13-16-44" src="https://github.com/user-attachments/assets/bde94694-4a01-4c93-8e0d-06e143916e31" />
 
 ## Setup
 ### Automated Setup
