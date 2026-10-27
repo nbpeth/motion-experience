@@ -84,7 +84,8 @@ def contours_payload(contours, frame_w, frame_h):
     return {"w": frame_w, "h": frame_h, "contours": shapes}
 
 def show_background_subtraction_mask(mask):
-    cv.imshow('L*a*b*', mask)
+    # cv.imshow('L*a*b*', mask)
+    cv.imshow('mask', mask)
 
 if not cap.isOpened():
     print("Cannot open camera")
@@ -113,11 +114,13 @@ while True:
     
     mask = backSub.apply(hsv)
     mask = cv.morphologyEx(mask, cv.MORPH_OPEN, np.ones((5, 5), np.uint8))
+
+    show_background_subtraction_mask(mask)
     
     if cv.waitKey(1) == ord('q'):
         break
 
-    contours = get_top_n_contours(mask, 3) or ()
+    contours = get_top_n_contours(mask, 30) or ()
     contours = [c for c in contours if cv.contourArea(c) >= MIN_CONTOUR_AREA]
 
     contour_streamer.publish_contours(contours_payload(contours, frame_w, frame_h))

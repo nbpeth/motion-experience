@@ -99,7 +99,7 @@ function setupCanvas() {
 
 async function start() {
   await loadSlim(tsParticles);
-  await tsParticles.load({ id: "starfield", options: starfieldConfig(2) });
+  await tsParticles.load({ id: "starfield", options: starfieldConfig(250) });
 
   const { canvas, ctx } = setupCanvas();
   connectContourStream(canvas, ctx);
