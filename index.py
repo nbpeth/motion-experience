@@ -12,7 +12,7 @@ from contour_stream import ContourStreamer
 pyautogui.PAUSE = 0
 pyautogui.FAILSAFE = False
 
-CAMERA_INDEX = 1
+CAMERA_INDEX = 0
 MIN_CONTOUR_AREA = 3000
 SMOOTHING = 0.3
 MAX_STEP = 80
@@ -63,7 +63,7 @@ def update_cursor_from_motion(contour, frame_w, frame_h, smooth_x, smooth_y):
     target_x, target_y = center
     smooth_x += clamp((target_x - smooth_x) * SMOOTHING, MAX_STEP)
     smooth_y += clamp((target_y - smooth_y) * SMOOTHING, MAX_STEP)
-    # pyautogui.moveTo(smooth_x, smooth_y)
+    pyautogui.moveTo(smooth_x, smooth_y)
 
     return smooth_x, smooth_y
 
@@ -114,16 +114,16 @@ while True:
     
     mask = backSub.apply(hsv)
     mask = cv.morphologyEx(mask, cv.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    # show_background_subtraction_mask(mask)
 
-    show_background_subtraction_mask(mask)
     
     if cv.waitKey(1) == ord('q'):
         break
 
-    contours = get_top_n_contours(mask, 30) or ()
-    contours = [c for c in contours if cv.contourArea(c) >= MIN_CONTOUR_AREA]
-
-    contour_streamer.publish_contours(contours_payload(contours, frame_w, frame_h))
+    contours = get_top_n_contours(mask, 5) or ()
+    # contours = [c for c in contours if cv.contourArea(c) >= MIN_CONTOUR_AREA]
+    # contour_streamer.publish_contours(contours_payload(contours, frame_w, frame_h))
+    contour_streamer.publish_image_bytes(mask)
 
     if contours:
         largest = max(contours, key=cv.contourArea)

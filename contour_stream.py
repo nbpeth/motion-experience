@@ -1,9 +1,11 @@
 import json
+import struct
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
 CONTOUR_PATH = "/contours"
+IMAGE_BYTES_PATH = "/image_bytes"
 
 
 class _Channel:
@@ -28,6 +30,10 @@ class ContourStreamer:
     def __init__(self, port=8001):
         self.port = port
         self._contours = _Channel()
+        self._image_bytes = _Channel()
+
+    def publish_image_bytes(self, payload):
+        self._image_bytes.publish(payload)
 
     def publish_contours(self, payload):
         self._contours.publish(json.dumps(payload).encode())
@@ -37,26 +43,52 @@ class ContourStreamer:
 
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
-                if urlsplit(self.path).path != CONTOUR_PATH:
+                # if urlsplit(self.path).path == CONTOUR_PATH:
+                #     self._serve_contours()
+                print("?", urlsplit(self.path).path)
+                if urlsplit(self.path).path == IMAGE_BYTES_PATH:
+                    print("Serving image bytes stream...")
+                    self._serve_image_bytes()
+                else:
                     self.send_error(404)
-                    return
 
+            # def _serve_contours(self):  
+            #     self.send_response(200)
+            #     self.send_header("Cache-Control", "no-store")
+            #     self.send_header("Content-Type", "text/event-stream")
+            #     self.send_header("Access-Control-Allow-Origin", "*")
+            #     self.end_headers()
+            #     try:
+            #         while True:
+            #             data, new_id = streamer._contours.wait_next(last_id)
+            #             if new_id == last_id:
+            #                 continue
+            #             last_id = new_id
+            #             self.wfile.write(b"data: ")
+            #             self.wfile.write(data)
+            #             self.wfile.write(b"\n\n")
+            #             self.wfile.flush()
+            #     except (BrokenPipeError, ConnectionResetError):
+            #         pass
+
+            def _serve_image_bytes(self):
                 self.send_response(200)
                 self.send_header("Cache-Control", "no-store")
-                self.send_header("Content-Type", "text/event-stream")
+                self.send_header("Content-Type", "application/octet-stream")
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
 
                 last_id = 0
                 try:
                     while True:
-                        data, new_id = streamer._contours.wait_next(last_id)
+                        mask, new_id = streamer._image_bytes.wait_next(last_id)
                         if new_id == last_id:
                             continue
                         last_id = new_id
-                        self.wfile.write(b"data: ")
+                        h, w = mask.shape[:2]
+                        data = mask.tobytes()
+                        self.wfile.write(struct.pack("<III", w, h, len(data)))
                         self.wfile.write(data)
-                        self.wfile.write(b"\n\n")
                         self.wfile.flush()
                 except (BrokenPipeError, ConnectionResetError):
                     pass
@@ -68,4 +100,5 @@ class ContourStreamer:
         server.daemon_threads = True
         threading.Thread(target=server.serve_forever, daemon=True).start()
         
-        print(f"Contour stream at http://localhost:{self.port}{CONTOUR_PATH}")
+        # print(f"Contour stream at http://localhost:{self.port}{CONTOUR_PATH}")
+        print(f"Image bytes stream at http://localhost:{self.port}{IMAGE_BYTES_PATH}")
